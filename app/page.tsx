@@ -16,14 +16,26 @@ const login = async ({ data }: { data: FormData }) => {
 		.then((res) => res)
 		.catch((error) => error.response);
 	console.log({ response: response?.data, status: response?.status });
+	return response.data;
+};
+
+const getData1 = async () => {
+	const response = await axios
+		.get(`http://localhost:3001/getData`, { withCredentials: true })
+		.then((res) => res)
+		.catch((error) => error.response);
+	return response.data;
 };
 
 export default function Home() {
+	// auth();
 	const submit = async (FormData: FormData) => {
 		let body = {};
 
 		console.log({ FormData });
 		const loginData = await login({ data: FormData });
+		const getData = await getData1();
+		console.log({ getData });
 	};
 
 	return (
