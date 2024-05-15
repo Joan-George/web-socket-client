@@ -4,6 +4,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import { redirect } from "next/navigation";
 
 const login = async ({ data }: { data: FormData }) => {
 	let formData = {};
@@ -28,13 +29,13 @@ const getData1 = async () => {
 };
 
 export default function Home() {
-	// auth();
 	const submit = async (FormData: FormData) => {
 		let body = {};
 
 		console.log({ FormData });
 		const loginData = await login({ data: FormData });
 		const getData = await getData1();
+		redirect("/chats");
 		console.log({ getData });
 	};
 
