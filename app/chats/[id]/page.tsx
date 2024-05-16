@@ -1,12 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input } from "postcss";
 import { useState } from "react";
 
-export default function ChatIdPage() {
+export default function ChatIdPage({ params }: { params: { id: string } }) {
+	console.log({ params });
 	const [messages, setMessages] = useState(["this is my first message"]);
 	const [message, setMessage] = useState("");
 	const [open, setOpen] = useState(false);
