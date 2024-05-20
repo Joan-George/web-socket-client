@@ -35,10 +35,9 @@ export default function ChatIdPage({ params }: { params: { id: string } }) {
 	return (
 		<main className="flex flex-col gap-2">
 			<div className="flex flex-col w-56 self-center mt-2">
+				<div>This is Group1 {params.id}</div>
 				<Input placeholder="Message here" onChange={(e) => setMessage(e?.target?.value)} value={message} onKeyDown={handleKeyDown} />
-				<Button className="mt-3" onClick={sendMessage} disabled={!message}>
-					Send Message
-				</Button>
+
 				<Button asChild className="mt-1" variant={"destructive"}>
 					<Link href={"/api/auth/logout"}>LogOut</Link>
 				</Button>
