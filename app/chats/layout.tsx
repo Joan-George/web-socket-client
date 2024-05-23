@@ -1,10 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -12,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-	groupName: z.string().min(1, {
+	group_name: z.string().min(1, {
 		message: "Group name should at least contain one character",
 	}),
 });
@@ -25,13 +26,18 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			groupName: "",
+			group_name: "",
 		},
 	});
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
+	async function onSubmit(values: z.infer<typeof formSchema>) {
 		// Do something with the form values.
 		// ✅ This will be type-safe and validated.
+		console.log({ baseURL: process.env.API_BASE_URL });
+		await axios.post(`${process.env.API_BASE_URL}/chatroom/create`, values, { withCredentials: true });
+		form.reset();
+		setIsDialogueOpen(false);
+
 		console.log(values);
 		setIsDialogueOpen(false);
 	}
@@ -44,25 +50,23 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 				<div id="miscellaneous">
 					<Dialog open={isDialogueOpen} onOpenChange={(open) => setIsDialogueOpen(open)}>
 						<DialogTrigger asChild>
-							<Button variant="outline">Edit Profile</Button>
+							<Button variant="outline">Create Group</Button>
 						</DialogTrigger>
 						<DialogContent className="sm:max-w-[425px]">
 							<DialogHeader>
-								<DialogTitle>Edit profile</DialogTitle>
-								<DialogDescription>Make changes to your profile here. Click save when you&apos;re done.</DialogDescription>
+								<DialogTitle>Create Group</DialogTitle>
 							</DialogHeader>
 							<Form {...form}>
 								<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 									<FormField
 										control={form.control}
-										name="groupName"
+										name="group_name"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Username</FormLabel>
+												<FormLabel>Group Name</FormLabel>
 												<FormControl>
-													<Input placeholder="shadcn" {...field} />
+													<Input placeholder="Enter Group Name" {...field} />
 												</FormControl>
-												<FormDescription>This is your public display name.</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}

@@ -22,7 +22,7 @@ const login = async ({ data }: { data: FormData }) => {
 
 const getData1 = async () => {
 	const response = await axios
-		.get(`http://localhost:3001/getData`, { withCredentials: true })
+		.get(`${process.env.API_BASE_URL}/getData`, { withCredentials: true })
 		.then((res) => res)
 		.catch((error) => error.response);
 	return response.data;
