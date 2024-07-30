@@ -2,9 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const getMessages = async (id: string) => {
+	const response = await axios
+		.get(`${process.env.API_BASE_URL}/message/${id}`, { withCredentials: true })
+		.then((res) => res)
+		.catch((error) => error.response);
+	return response.data;
+};
 
 export default function ChatIdPage({ params }: { params: { id: string } }) {
 	console.log({ params });
@@ -13,14 +22,52 @@ export default function ChatIdPage({ params }: { params: { id: string } }) {
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
 
+	useEffect(() => {
+		const fetchData = async () => {
+			const chatRooms = await getMessages(params.id);
+			setMessages(chatRooms);
+		};
+
+		if (params.id) fetchData();
+	}, [params.id]);
+
+	// This is for socket test
 	const updateMessage = (data) => {
 		console.log("Received message:", data);
 		setMessages((prevMessages) => [...prevMessages, data.data]);
 	};
 
-	const sendMessage = () => {
-		console.log({ message });
-		socket.send(message);
+	// const sendMessage = () => {
+	// 	console.log({ message });
+	// 	socket.send(message);
+	// 	setMessage("");
+	// };
+
+	useEffect(() => {
+		console.log("useEffect");
+		const socket = new WebSocket("ws://localhost:3001");
+
+		socket.addEventListener("open", (event) => {
+			console.log("open");
+			socket.send("Connection established");
+		});
+
+		socket.addEventListener("message", (event) => {
+			console.log({ socket: event?.data });
+		});
+		// socket.addEventListener("message", updateMessage);
+	}, []);
+
+	const sendMessage = async () => {
+		const result = await axios.post(
+			`${process.env.API_BASE_URL}/message/create`,
+			{ group_id: params?.id, message },
+			{ withCredentials: true }
+		);
+		console.log({ result });
+		const newMessages = await getMessages(params?.id);
+		setMessages(newMessages);
+		console.log();
 		setMessage("");
 	};
 
@@ -45,7 +92,7 @@ export default function ChatIdPage({ params }: { params: { id: string } }) {
 
 			<ul>
 				{messages.map((message) => (
-					<li key={message}>{message}</li>
+					<li key={message.id}>{message.message}</li>
 				))}
 			</ul>
 		</main>

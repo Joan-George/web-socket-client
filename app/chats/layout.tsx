@@ -8,20 +8,37 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-	group_name: z.string().min(1, {
+	name: z.string().min(1, {
 		message: "Group name should at least contain one character",
 	}),
 });
 
+const getChats = async () => {
+	const response = await axios
+		.get(`${process.env.API_BASE_URL}/group`, { withCredentials: true })
+		.then((res) => res)
+		.catch((error) => error.response);
+	return response.data;
+};
+
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
 	const params = useParams();
-	console.log({ layout: params });
 	const [isDialogueOpen, setIsDialogueOpen] = useState<boolean>(false);
+	const [chats, setChats] = useState([]);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const chatRooms = await getChats();
+			setChats(chatRooms);
+		};
+
+		fetchData();
+	}, []);
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -34,7 +51,9 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 		// Do something with the form values.
 		// ✅ This will be type-safe and validated.
 		console.log({ baseURL: process.env.API_BASE_URL });
-		await axios.post(`${process.env.API_BASE_URL}/chatroom/create`, values, { withCredentials: true });
+		await axios.post(`${process.env.API_BASE_URL}/group/create`, values, { withCredentials: true });
+		const chatRooms = await getChats();
+		setChats(chatRooms);
 		form.reset();
 		setIsDialogueOpen(false);
 
@@ -60,7 +79,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 								<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 									<FormField
 										control={form.control}
-										name="group_name"
+										name="name"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Group Name</FormLabel>
@@ -82,17 +101,17 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 						</DialogContent>
 					</Dialog>
 				</div>
-				{[...Array(30)].map((_, i) => (
+				{chats.map((chat) => (
 					<Link
-						key={i}
+						key={chat.id}
 						className={cn(
 							`bg-zinc-900 p-4 ease-in-out transition-all cursor-pointer  hover:bg-slate-700 ${
-								params.id === i.toString() ? "bg-green-500 hover:bg-green-500" : ""
+								params.id === chat.id ? "bg-green-500 hover:bg-green-500" : ""
 							}`
 						)}
-						href={`/chats/${i}`}
+						href={`/chats/${chat.id}`}
 					>
-						{`This is testing group ${i}`}
+						{chat.name}
 					</Link>
 				))}
 			</div>
